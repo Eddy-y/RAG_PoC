@@ -1,0 +1,7 @@
+openai
+langchain
+streamlit
+pypdf
+pinecone-client
+sentence_transformers
+langchain-pinecone
