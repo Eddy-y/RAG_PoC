@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 
 import pinecone
-from pinecone import Pinecone, PodSpec
+from pinecone import Pinecone, PodSpec, ServerlessSpec
 import tempfile
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 #from langchain.document_loaders import PyPDFLoader
@@ -19,7 +19,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 os.environ["PINECONE_API_KEY"] = "1302c513-c9c7-4ee1-a15f-a6c9e00f9d7a"
 
 FILE_LIST = "archivos.txt"
-INDEX_NAME = 'rag'
+INDEX_NAME = "rag"
 
 pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
 
@@ -52,13 +52,13 @@ def clean_files(path):
         pass
     
     delete_by_index(INDEX_NAME)
-
+    #delete_by_nameSpace()
     return True
 
-def delete_by_nameSpace(nameSpace):
+def delete_by_nameSpace():
     #TO DELETE FROM A NAMESPACE (ID, METADATA, NAMESPACE)
     index = pc.Index(INDEX_NAME)
-    index.delete(delete_all=True, namespace=nameSpace)
+    index.delete(delete_all=True, namespace=INDEX_NAME)
 
 def delete_by_index(indexName):
     pc.delete_index(indexName)
@@ -67,7 +67,10 @@ def delete_by_index(indexName):
         name=indexName,
         dimension=384,
         metric="cosine",
-        spec=PodSpec(environment="gcp-starter")
+        spec=ServerlessSpec(
+            cloud="aws",
+            region="us-east-1"
+        )
     )
 
 
@@ -132,3 +135,11 @@ def create_embeddings(file_name, text):
         index_name=INDEX_NAME)
         
     return True
+
+def get_api_key(file_path):
+    with open(file_path, 'r') as file:
+        for line in file:
+            key_name, key_value = line.strip().split(': ')
+            if key_name == "openAI":
+                return key_value
+    return None
